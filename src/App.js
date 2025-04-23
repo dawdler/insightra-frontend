@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+/* import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -56,6 +56,31 @@ function App() {
         </Box>
       </Container>
     </div>
+  );
+}
+
+export default App; */ 
+
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Box } from '@mui/material';
+import { routes } from './routes';
+
+function App() {
+  return (
+    <Box sx={{ width: '100%' }}>
+      <BrowserRouter>
+        <Routes>
+          {routes.map((route) => (
+            <Route 
+              key={route.path}
+              path={route.path}
+              element={<route.element />}
+            />
+          ))}
+        </Routes>
+      </BrowserRouter>
+    </Box>
   );
 }
 
