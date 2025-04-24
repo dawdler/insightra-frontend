@@ -17,6 +17,7 @@ import ForgotPassword from './components/ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
+import axios from 'axios';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -66,6 +67,7 @@ export default function SignIn(props) {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -75,16 +77,41 @@ export default function SignIn(props) {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!validateInputs()) {
       return;
     }
+  
+    setIsLoading(true); // Start loading    
+
     const data = new FormData(event.currentTarget);
-    console.log({
+    const userData = {
       email: data.get('email'),
-      password: data.get('password'),
-    });
+      password: data.get('password')
+    };
+  
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/auth/signin', userData);
+      if (response.status === 200) {
+        // Store user data
+        localStorage.setItem('user', JSON.stringify(response.data));
+        // Redirect to home page
+        window.location.href = '/';
+      }
+    } catch (error) {
+      if (error.response?.data?.error) {
+        setEmailError(true);
+        setPasswordError(true);
+        setEmailErrorMessage('Invalid email or password');
+        setPasswordErrorMessage('Invalid email or password');
+      } else {
+        console.error('Sign-in error:', error);
+      }
+    } finally {
+      setIsLoading(false); // Stop loading
+    }
   };
 
   const validateInputs = () => {
@@ -183,8 +210,9 @@ export default function SignIn(props) {
               fullWidth
               variant="contained"
               onClick={validateInputs}
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
             <Link
               component="button"
@@ -217,7 +245,7 @@ export default function SignIn(props) {
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                href="/signup"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >

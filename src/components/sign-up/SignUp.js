@@ -16,6 +16,7 @@ import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
+import axios from 'axios'; 
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -59,6 +60,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
+
 export default function SignUp(props) {
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
@@ -66,6 +68,7 @@ export default function SignUp(props) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [nameError, setNameError] = React.useState(false);
   const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const validateInputs = () => {
     const email = document.getElementById('email');
@@ -104,19 +107,41 @@ export default function SignUp(props) {
     return isValid;
   };
 
-  const handleSubmit = (event) => {
-    if (nameError || emailError || passwordError) {
+    const handleSubmit = async (event) => {
       event.preventDefault();
-      return;
-    }
-    const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get('name'),
-      lastName: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+      
+      if (!validateInputs()) {
+        return;
+      }
+      setIsLoading(true); // Start loading
+
+      const data = new FormData(event.currentTarget);
+      const userData = {
+        full_name: data.get('name'),
+        email: data.get('email'),
+        password: data.get('password')
+      };
+  
+      try {
+        const response = await axios.post('http://127.0.0.1:5000/auth/signup', userData);
+        if (response.status === 201) {
+          // Redirect to sign in page
+          window.location.href = '/';
+        }
+      } catch (error) {
+        if (error.response?.data?.error) {
+          if (error.response.data.error.includes('Email')) {
+            setEmailError(true);
+            setEmailErrorMessage(error.response.data.error);
+          } else {
+            // Handle other errors
+            console.error('Signup error:', error.response.data.error);
+          }
+        }
+      } finally {
+        setIsLoading(false); // Stop loading
+      }
+    };
 
   return (
     <AppTheme {...props}>
@@ -191,8 +216,9 @@ export default function SignUp(props) {
               fullWidth
               variant="contained"
               onClick={validateInputs}
+              disabled={isLoading} // Disable button while loading
             >
-              Sign up
+              {isLoading ? 'Creating Account...' : 'Sign up'}
             </Button>
           </Box>
           <Divider>
