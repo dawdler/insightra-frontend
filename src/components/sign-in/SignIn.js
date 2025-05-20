@@ -98,7 +98,7 @@ export default function SignIn(props) {
         // Store user data
         localStorage.setItem('user', JSON.stringify(response.data));
         // Redirect to home page
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       if (error.response?.data?.error) {

@@ -66,6 +66,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { routes } from './routes';
 
+
 function App() {
   return (
     <Box sx={{ width: '100%' }}>
